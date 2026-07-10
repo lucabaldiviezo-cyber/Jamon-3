@@ -785,17 +785,18 @@ De lo único que estoy seguro es que seremos diamantes cuando nuestros días dor
         window.addEventListener('scroll', checkScrollReveal);
 
         // --- CONTADOR ---
-        const startDate = new Date('2025-03-15T00:00:00');
+        const startDate = new Date('2026-05-23T00:00:00');
 
         function updateCounter() {
             const now = new Date();
             const diff = now - startDate;
 
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const seconds = Math.floor((diff % (1000 * 60)) / 1000);
 
-            document.getElementById('days').innerHTML = `${47} <span>Días</span>`;
+            document.getElementById('days').innerHTML = `${days} <span>Días</span>`;
             document.getElementById('hours').innerHTML = `${String(hours).padStart(2, '0')} <span>Horas</span>`;
             document.getElementById('minutes').innerHTML = `${String(minutes).padStart(2, '0')} <span>Min</span>`;
             document.getElementById('seconds').innerHTML = `${String(seconds).padStart(2, '0')} <span>Seg</span>`;
