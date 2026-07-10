@@ -727,6 +727,72 @@ De lo único que estoy seguro es que seremos diamantes cuando nuestros días dor
         }
         generateContinuousHearts();
 
+        function playUnlockSound() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                if (!AudioContext) return;
+                const ctx = new AudioContext();
+                
+                // Nota 1 (Corta y suave)
+                let osc1 = ctx.createOscillator();
+                let gain1 = ctx.createGain();
+                osc1.type = 'sine';
+                osc1.frequency.setValueAtTime(523.25, ctx.currentTime); // Do5
+                gain1.gain.setValueAtTime(0.15, ctx.currentTime);
+                gain1.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.15);
+                osc1.connect(gain1);
+                gain1.connect(ctx.destination);
+                osc1.start();
+                osc1.stop(ctx.currentTime + 0.15);
+
+                // Nota 2 (Armónica y brillante)
+                setTimeout(() => {
+                    let osc2 = ctx.createOscillator();
+                    let gain2 = ctx.createGain();
+                    osc2.type = 'sine';
+                    osc2.frequency.setValueAtTime(783.99, ctx.currentTime); // Sol5
+                    gain2.gain.setValueAtTime(0.2, ctx.currentTime);
+                    gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+                    osc2.connect(gain2);
+                    gain2.connect(ctx.destination);
+                    osc2.start();
+                    osc2.stop(ctx.currentTime + 0.4);
+                }, 100);
+            } catch(e) { console.log("AudioContext no soportado"); }
+        }
+
+        // --- LÓGICA DE DESBLOQUEO ORIGINAL CON INTEGRACIÓN DE AUDIO ---
+        const biometricBtn = document.getElementById('biometric-btn');
+        const lockScreen = document.getElementById('lock-screen');
+        const mainContent = document.getElementById('main-content');
+        const lockStatus = document.getElementById('lock-status');
+        let pressTimer;
+
+        function startPress() {
+            lockStatus.innerText = "Analizando huella digital...";
+            lockStatus.style.color = "#d62839";
+            biometricBtn.classList.add('scanning'); 
+            
+            pressTimer = setTimeout(() => {
+                lockStatus.innerText = "Verificando identidad...";
+                pressTimer = setTimeout(() => {
+                    lockStatus.innerText = "Acceso concedido ✔";
+                    
+                    playUnlockSound(); // Aquí se ejecuta tu sonido premium al validar con éxito
+
+                    lockScreen.style.opacity = '0';
+                    lockScreen.style.transform = 'scale(1.15)';
+                    setTimeout(() => {
+                        lockScreen.style.display = 'none';
+                        mainContent.classList.add('reveal');
+                        document.getElementById('romantic-audio').play().catch(() => {});
+                        checkScrollReveal();
+                    }, 1000);
+                }, 800);
+            }, 1200);
+        }
+
+
         // --- LÓGICA DE DESBLOQUEO REALISTA ---
         const biometricBtn = document.getElementById('biometric-btn');
         const lockScreen = document.getElementById('lock-screen');
