@@ -1,0 +1,925 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Para mi amor</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #1a0005;
+            --main-red: #d62839;
+            --accent-gold: #b79455;
+            --text-light: #fff5f5;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Georgia', serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #2b000a 0%, #0f0003 100%);
+            color: var(--text-light);
+            overflow-x: hidden;
+            text-align: center;
+        }
+
+        /* --- Fondo de Corazones Flotantes Continuos --- */
+        #hearts-bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .bg-heart-particle {
+            position: absolute;
+            color: rgba(214, 40, 57, 0.25);
+            animation: floatHearts linear infinite;
+        }
+
+        @keyframes floatHearts {
+            0% { transform: translateY(110vh) scale(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.6; }
+            100% { transform: translateY(-10vh) scale(1.3) rotate(360deg); opacity: 0; }
+        }
+
+        /* --- Pantalla de Bloqueo (Huella Digital Realista) --- */
+        #lock-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, #3a000f 0%, #0a0002 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1), visibility 1s, transform 1s ease-in-out;
+            user-select: none;
+        }
+
+        .title-romantic {
+            font-style: italic;
+            font-size: 2.5rem;
+            color: var(--text-light);
+            margin-bottom: 2.5rem;
+            text-shadow: 0 0 15px rgba(255,255,255,0.4);
+            animation: fadeInDown 1.2s ease-out;
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Contenedor de la Huella Digital Real */
+        .fingerprint-container {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.01);
+            transition: all 0.3s ease;
+            overflow: hidden; /* Mantiene el láser dentro del círculo */
+        }
+
+        .fingerprint-icon {
+            font-size: 5rem;
+            color: #444;
+            transition: color 0.3s, filter 0.3s;
+            z-index: 2;
+        }
+
+        /* Línea Láser del Escáner */
+        .scanner-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: linear-gradient(to right, transparent, var(--main-red), transparent);
+            box-shadow: 0 0 12px var(--main-red), 0 0 20px var(--main-red);
+            opacity: 0;
+            z-index: 3;
+            pointer-events: none;
+        }
+
+        /* Ondas del escáner biométrico activo */
+        .fingerprint-container::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            border: 3px solid rgba(214, 40, 57, 0.5);
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(1);
+            z-index: 1;
+        }
+
+        /* Estado Escaneando (Cuando mantiene presionado) */
+        .fingerprint-container.scanning {
+            border-color: rgba(214, 40, 57, 0.4);
+            box-shadow: 0 0 40px rgba(214, 40, 57, 0.5), inset 0 0 25px rgba(214, 40, 57, 0.2);
+            transform: scale(0.97); /* Efecto de hundimiento táctil */
+        }
+
+        .fingerprint-container.scanning .fingerprint-icon {
+            color: var(--main-red);
+            filter: drop-shadow(0 0 15px rgba(214, 40, 57, 0.8));
+            animation: vibe 0.1s infinite alternate; /* Micro-vibración de lectura */
+        }
+
+        .fingerprint-container.scanning .scanner-line {
+            opacity: 1;
+            animation: scanMove 1.4s infinite ease-in-out;
+        }
+
+        .fingerprint-container.scanning::before {
+            animation: shockwave 1.4s infinite linear;
+        }
+
+        @keyframes scanMove {
+            0% { top: 10%; }
+            50% { top: 85%; }
+            100% { top: 10%; }
+        }
+
+        @keyframes vibe {
+            0% { transform: translate(0.5px, 0.5px) scale(1); }
+            100% { transform: translate(-0.5px, -0.5px) scale(1.02); }
+        }
+
+        @keyframes shockwave {
+            0% { transform: scale(0.95); opacity: 1; }
+            100% { transform: scale(1.6); opacity: 0; }
+        }
+
+        .status-text {
+            margin-top: 2rem;
+            font-size: 0.9rem;
+            letter-spacing: 2px;
+            color: #aaa;
+            height: 20px;
+            font-weight: 300;
+            transition: color 0.3s;
+        }
+
+        /* --- Contenido Principal --- */
+        #main-content {
+            position: relative;
+            z-index: 10;
+            opacity: 0;
+            visibility: hidden;
+            transform: scale(1.05);
+            transition: opacity 1.5s ease-out, visibility 1.5s, transform 1.5s ease-out;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        #main-content.reveal {
+            opacity: 1;
+            visibility: visible;
+            transform: scale(1);
+        }
+
+        .section {
+            margin-bottom: 5rem;
+            padding-top: 2rem;
+            opacity: 0;
+            transform: translateY(25px);
+            transition: opacity 1s ease-out, transform 1s ease-out;
+        }
+
+        .section.scroll-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Contador */
+        .counter-container {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(183, 148, 85, 0.3);
+            border-radius: 15px;
+            padding: 2rem 1rem;
+            margin-top: 1rem;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .counter-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .counter-box {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--text-light);
+            text-shadow: 0 0 10px rgba(255,255,255,0.2);
+        }
+
+        .counter-box span {
+            display: block;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--accent-gold);
+            margin-top: 0.2rem;
+        }
+
+        /* Dedicatoria */
+        .dedication-text {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            color: #e0c3c7;
+            text-align: justify;
+            margin: 1.5rem 0;
+        }
+
+        /* Galería de Fotos */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .photo-card {
+            background: white;
+            padding: 0.5rem;
+            padding-bottom: 1.5rem;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+            transform: rotate(calc(var(--r, 0) * 1deg));
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s;
+        }
+
+        .photo-card:hover {
+            transform: scale(1.08) rotate(0deg);
+            z-index: 10;
+            box-shadow: 0 12px 30px rgba(214, 40, 57, 0.4);
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        /* --- FRASCO DE AMOR INTERACTIVO --- */
+        .jar-container {
+            position: relative;
+            margin: 2.5rem auto;
+            width: 160px;
+            height: 220px;
+            cursor: pointer;
+        }
+
+        .love-jar {
+            font-size: 8.5rem;
+            color: var(--accent-gold);
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.6));
+            transition: transform 0.2s ease, color 0.3s;
+        }
+
+        .jar-container:hover .love-jar {
+            transform: scale(1.05) rotate(-3deg);
+            color: #d1b47a;
+        }
+
+        .jar-container:active .love-jar {
+            transform: scale(0.95) rotate(3deg);
+        }
+
+        /* Corazoncitos flotando dentro del frasco de fondo */
+        .jar-heart-glow {
+            position: absolute;
+            top: 55%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--main-red);
+            font-size: 2rem;
+            opacity: 0.6;
+            animation: jarGlow 2s infinite ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes jarGlow {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+            50% { transform: translate(-50%, -45%) scale(1.2); opacity: 0.8; filter: drop-shadow(0 0 10px var(--main-red)); }
+        }
+
+        /* Caja donde se muestra el papelito con la razón de amor */
+        .reason-popup {
+            background: #fff8f0;
+            color: #2b1115;
+            padding: 1.2rem;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            margin: 1.5rem auto 0 auto;
+            max-width: 400px;
+            min-height: 70px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-style: italic;
+            font-size: 1.05rem;
+            border: 2px dashed var(--accent-gold);
+            opacity: 0;
+            transform: translateY(15px) scale(0.95);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+        }
+
+        .reason-popup.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+
+        /* Efecto explosión de corazones al pulsar el frasco */
+        .burst-heart {
+            position: absolute;
+            color: var(--main-red);
+            pointer-events: none;
+            z-index: 100;
+            animation: burstUp 0.8s ease-out forwards;
+        }
+
+        @keyframes burstUp {
+            0% { transform: translate(-50%, -50%) scale(0) rotate(0deg); opacity: 1; }
+            100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(1.4) rotate(var(--tr)); opacity: 0; }
+        }
+
+        /* Carta */
+        .envelope-container {
+            perspective: 1200px;
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+            cursor: pointer;
+        }
+
+        .envelope {
+            position: relative;
+            width: 200px;
+            height: 140px;
+            background: #d4af37;
+            border-radius: 0 0 5px 5px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.4);
+            transition: transform 0.5s ease;
+            transform-style: preserve-3d;
+        }
+
+        .envelope-container:hover .envelope {
+            transform: translateY(-5px);
+        }
+
+        .envelope::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            border-left: 100px solid transparent;
+            border-right: 100px solid transparent;
+            border-top: 70px solid #f3e5ab;
+            transform-origin: top;
+            transition: transform 0.5s var(--flap-delay, 0.5s) ease;
+            z-index: 5;
+        }
+
+        .envelope.open::before {
+            transform: rotateX(180deg);
+            z-index: 1;
+            transition: transform 0.5s var(--flap-delay, 0s) ease;
+        }
+
+        /* Vista previa mini de la carta saliendo */
+        .letter-mini-preview {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 180px;
+            height: 120px;
+            background: #fff8f0;
+            z-index: 2;
+            border-radius: 4px;
+            transition: transform 0.5s var(--letter-delay, 0s) ease, opacity 0.5s var(--letter-delay, 0s) ease;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            padding: 10px;
+            overflow: hidden;
+            opacity: 0.8;
+        }
+
+        .envelope.open .letter-mini-preview {
+            transform: translateY(-60px);
+            opacity: 1;
+            transition: transform 0.5s var(--letter-delay, 0.3s) ease, opacity 0.5s var(--letter-delay, 0.3s) ease;
+        }
+
+        /* Modal Carta con Scroll */
+        .letter-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.7);
+            width: 90%;
+            max-width: 450px;
+            max-height: 85vh;
+            overflow-y: auto;
+            background: #fff8f0;
+            color: #2b1115;
+            padding: 2.5rem 2rem;
+            border-radius: 8px;
+            box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s cubic-bezier(0.19, 1, 0.22, 1);
+            text-align: left;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .letter-modal.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .close-letter {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #888;
+            z-index: 10;
+            transition: color 0.2s;
+        }
+
+        .close-letter:hover {
+            color: var(--main-red);
+        }
+
+        /* Reproductor */
+        .audio-player {
+            background: rgba(255,255,255,0.05);
+            padding: 1.5rem;
+            border-radius: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            margin: 2rem auto;
+            max-width: 400px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.2);
+            backdrop-filter: blur(4px);
+        }
+
+        .audio-controls-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .play-btn {
+            background: var(--main-red);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            color: white;
+            cursor: pointer;
+            font-size: 1.2rem;
+            flex-shrink: 0;
+            transition: transform 0.2s;
+        }
+
+        .play-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .music-link-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: transparent;
+            border: 1px solid var(--accent-gold);
+            color: var(--accent-gold);
+            padding: 0.5rem 1.2rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            margin-top: 0.5rem;
+        }
+
+        .music-link-btn:hover {
+            background: var(--accent-gold);
+            color: #1a0005;
+            box-shadow: 0 0 12px rgba(183, 148, 85, 0.5);
+        }
+
+        /* Pétalos */
+        .petals-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 500;
+            overflow: hidden;
+        }
+
+        .petal {
+            position: absolute;
+            background: radial-gradient(circle, #ff4d6d, #ff758f);
+            border-radius: 150% 0 150% 150%;
+            opacity: 0.7;
+            animation: float 8s linear infinite;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(-10%) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.7; }
+            90% { opacity: 0.7; }
+            100% { transform: translateY(110%) rotate(360deg); opacity: 0; }
+        }
+
+        h2 {
+            font-weight: normal;
+            letter-spacing: 1px;
+            color: var(--accent-gold);
+            margin-bottom: 0.5rem;
+            font-size: 1.6rem;
+        }
+
+        .subtitle {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: #888;
+            margin-bottom: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="hearts-bg-container"></div>
+
+    <div class="petals-container" id="petals"></div>
+
+    <div id="lock-screen">
+        <h1 class="title-romantic"></h1>
+        <div class="fingerprint-container" id="biometric-btn">
+            <i class="fa-solid fa-fingerprint fingerprint-icon"></i>
+            <div class="scanner-line"></div>
+        </div>
+        <div class="status-text" id="lock-status">Mantén presionada la huella para desbloquear.</div>
+    </div>
+
+    <div id="main-content">
+        
+        <section class="section">
+            <h1 style="font-size: 2.8rem; font-style: italic; margin-bottom: 0.5rem;">L&J</h1>
+            <p style="color: var(--accent-gold); letter-spacing: 1px;">te conozco hace...</p>
+            
+            <div class="counter-container">
+                <div class="counter-grid">
+                    <div class="counter-box" id="days">000 <span>Días</span></div>
+                    <div class="counter-box" id="hours">00 <span>Horas</span></div>
+                    <div class="counter-box" id="minutes">00 <span>Min</span></div>
+                    <div class="counter-box" id="seconds">00 <span>Seg</span></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Ya lo sabes de sobra pero...</h2>
+            <p class="dedication-text">
+                viéndote a los ojos no puedo creer que seas mía, es mas que una obsesión toda mi atención nada se compara a vos y me pregunto ¿qué hice bien? para poder abrazarte cada noche, la vida es una locura pero me llevó a tu amor. Si me llamás, por siempre vendré no importa qué.
+De lo único que estoy seguro es que seremos diamantes cuando nuestros días dorados se nos acaben.
+            </p>
+            <p style="font-style: italic; color: var(--main-red); font-size: 1.2rem;">Te amo con toda mi alma.</p>
+        </section>
+
+        <section class="section">
+            <p class="subtitle">Desde la ultima vez que te hice algo asi, creamos nuevas historias</p>
+            <h2>Es lindo recordar, es lindo recordarte</h2>
+            <div class="photo-grid">
+                <div class="photo-card" style="--r: -3">
+                    <img src="https://i.ibb.co/pjfYhxRK/Whats-App-Image-2026-07-09-at-20-34-45-6.jpg" alt="Momento">
+                </div>
+                <div class="photo-card" style="--r: 2">
+                    <img src="https://i.ibb.co/Tq4KDjDt/Whats-App-Image-2026-07-09-at-20-34-45-5.jpg" alt="Tarde">
+                </div>
+                <div class="photo-card" style="--r: -1">
+                    <img src="https://i.ibb.co/6ccPg5Q8/Whats-App-Image-2026-07-09-at-20-34-45-4.jpg" alt="Mirada">
+                </div>
+                <div class="photo-card" style="--r: 4">
+                    <img src="https://i.ibb.co/B2JC9XWV/Whats-App-Image-2026-07-09-at-20-34-45-2.jpg" alt="Viaje">
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <p class="subtitle">Si bien podria escribir millones de "motivos" estos son algunos</p>
+            <h2>Frasco de motivos</h2>
+            <p style="font-size: 0.9rem; color: #aaa; margin-bottom: 0.5rem;">Toca el frasco para sacar una razón por la cual te amo</p>
+            
+            <div class="jar-container" id="love-jar-container">
+                <i class="fa-solid fa-jar love-jar"></i>
+                <i class="fa-solid fa-heart jar-heart-glow"></i>
+            </div>
+            
+            <div class="reason-popup" id="reason-display">Pulsa el frasco de arriba... 💖</div>
+        </section>
+
+        <section class="section">
+            <p class="subtitle">Una carta</p>
+            <h2>Tambien la tengo escrita por si la queres jeje</h2>
+            <div class="envelope-container" id="envelope-hitbox">
+                <div class="envelope" id="envelope">
+                    <div class="letter-mini-preview">
+                        <span style="font-size: 0.5rem; color:#888; display:block;">Amor,</span>
+                        <span style="font-size: 0.35rem; color:#aaa; display:block; margin-top:4px;">No fui tu primer novio ni el primer chico...</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <p class="subtitle">Nuestra canción</p>
+            <h2>Bailemos otra vez</h2>
+            <div class="audio-player">
+                <div class="audio-controls-row">
+                    <button class="play-btn" id="play-pause-btn">▶</button>
+                    <div style="text-align: left;">
+                        <p style="font-size: 0.9rem; font-weight: bold;">Nuestra Canción</p>
+                        <p style="font-size: 0.75rem; color: #aaa;">(si pongo la musica aqui me borran la pagina, apreta abajo)</p>
+                    </div>
+                </div>
+                <a href="https://www.youtube.com/watch?v=_O8fbvFudmA" target="_blank" class="music-link-btn">
+                    <i class="fa-solid fa-heart"></i> Apretame
+                </a>
+                <audio id="romantic-audio" src=""></audio>
+            </div>
+        </section>
+
+        <section class="section" style="margin-bottom: 2rem;">
+            <p class="subtitle">Y al final solo queda esto</p>
+            <h2 style="font-size: 2.2rem; font-style: italic; color: var(--text-light);">Te amo, amo Mi amor.</h2>
+            <p style="font-size: 0.85rem; color: var(--accent-gold); margin-top: 0.5rem;">Siempre tuyo, siempre mia, siempre nuestro.</p>
+        </section>
+    </div>
+
+    <div class="letter-modal" id="letter-modal">
+        <span class="close-letter" id="close-modal">&times;</span>
+        <h3 style="font-family: 'Georgia', serif; font-style: italic; font-size: 1.5rem; margin-bottom: 1rem; color: var(--main-red);">Amor,</h3>
+        <p style="font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem;">
+            No fui tu primer novio ni el primer chico en tu vida ni tu primer beso y no lo necesito para saber lo importante que sos para mi porque lo que siento no compite con el pasado, no intento borrar nada simplemente quiero construir algo tan real que todo lo demas deje de importar… no llegue primero pero llegue para quedarme y con eso me basta porque no quiero ser uno más en tu historia quiero ser ese capítulo que no se olvida, ese lugar donde encontres calma, dónde sientas que finalmente alguien te ama sin condiciones sin dudas y sin miedo, estoy seguro de algo… quiero ser la persona que te ame con todo el corazón que te cuide con toda su alma y que te respe te siempre, no solo en los momentos bonitos sino también cuando todo se complique, cuando todo sea más difícil porque ahí es donde el amor se demuestra si es real, quiero darte el amor and la atención que mereces, aprender de mis errores y ser mejor para vos cada día porque no se trata de haber sido el primero se trata de ser el que realmente se queda, el que realmente ama y yo te amo mas de lo que puedo explicar Jazmín.
+        </p>
+        <p style="text-align: right; font-style: italic; font-weight: bold; margin-top: 1.5rem;">Siempre tuyo.</p>
+    </div>
+
+    <script>
+        // --- EFECTO FONDO AUTOMÁTICO DE CORAZONES ---
+        function generateContinuousHearts() {
+            const container = document.getElementById('hearts-bg-container');
+            for(let i=0; i<15; i++) {
+                setTimeout(() => {
+                    const h = document.createElement('i');
+                    h.classList.add('fa-solid', 'fa-heart', 'bg-heart-particle');
+                    h.style.left = Math.random() * 100 + 'vw';
+                    h.style.fontSize = (Math.random() * 12 + 10) + 'px';
+                    h.style.animationDuration = (Math.random() * 8 + 8) + 's';
+                    h.style.animationDelay = (Math.random() * 4) + 's';
+                    container.appendChild(h);
+                    h.addEventListener('animationiteration', () => {
+                        h.style.left = Math.random() * 100 + 'vw';
+                    });
+                }, i * 400);
+            }
+        }
+        generateContinuousHearts();
+
+        // --- LÓGICA DE DESBLOQUEO REALISTA ---
+        const biometricBtn = document.getElementById('biometric-btn');
+        const lockScreen = document.getElementById('lock-screen');
+        const mainContent = document.getElementById('main-content');
+        const lockStatus = document.getElementById('lock-status');
+        let pressTimer;
+
+        function startPress() {
+            lockStatus.innerText = "Analizando huella digital...";
+            lockStatus.style.color = "#d62839";
+            biometricBtn.classList.add('scanning'); 
+            
+            pressTimer = setTimeout(() => {
+                lockStatus.innerText = "Verificando identidad...";
+                pressTimer = setTimeout(() => {
+                    lockStatus.innerText = "Acceso concedido ✔";
+                    lockScreen.style.opacity = '0';
+                    lockScreen.style.transform = 'scale(1.15)';
+                    setTimeout(() => {
+                        lockScreen.style.display = 'none';
+                        mainContent.classList.add('reveal');
+                        document.getElementById('romantic-audio').play().catch(() => {});
+                        checkScrollReveal();
+                    }, 1000);
+                }, 800);
+            }, 1200);
+        }
+
+        function cancelPress() {
+            clearTimeout(pressTimer);
+            biometricBtn.classList.remove('scanning'); 
+            if(lockScreen.style.display !== 'none') {
+                lockStatus.innerText = "Mantén presionada la huella para desbloquear.";
+                lockStatus.style.color = "#aaa";
+            }
+        }
+
+        biometricBtn.addEventListener('mousedown', startPress);
+        biometricBtn.addEventListener('mouseup', cancelPress);
+        biometricBtn.addEventListener('mouseleave', cancelPress);
+        biometricBtn.addEventListener('touchstart', (e) => { e.preventDefault(); startPress(); });
+        biometricBtn.addEventListener('touchend', cancelPress);
+
+        // --- APARICIÓN SUAVE EN SCROLL ---
+        const sections = document.querySelectorAll('.section');
+        function checkScrollReveal() {
+            if(mainContent.classList.contains('reveal')) {
+                sections.forEach(sec => {
+                    const top = sec.getBoundingClientRect().top;
+                    if(top < window.innerHeight * 0.88) {
+                        sec.classList.add('scroll-visible');
+                    }
+                });
+            }
+        }
+        window.addEventListener('scroll', checkScrollReveal);
+
+        // --- CONTADOR ---
+        const startDate = new Date('2025-03-15T00:00:00');
+
+        function updateCounter() {
+            const now = new Date();
+            const diff = now - startDate;
+
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+            document.getElementById('days').innerHTML = `${47} <span>Días</span>`;
+            document.getElementById('hours').innerHTML = `${String(hours).padStart(2, '0')} <span>Horas</span>`;
+            document.getElementById('minutes').innerHTML = `${String(minutes).padStart(2, '0')} <span>Min</span>`;
+            document.getElementById('seconds').innerHTML = `${String(seconds).padStart(2, '0')} <span>Seg</span>`;
+        }
+        setInterval(updateCounter, 1000);
+        updateCounter();
+
+        // --- LÓGICA DEL FRASCO INTERACTIVO DE AMOR ---
+        const jarContainer = document.getElementById('love-jar-container');
+        const reasonDisplay = document.getElementById('reason-display');
+
+        const loveReasons = [
+            "Amo cómo se iluminan tus ojos cuando sonreís. ✨",
+            "Por la paz inmensa que siento cuando me abrazás. 🫂",
+            "Porque hacés que los días difíciles sean mucho más livianos. 💖",
+            "Tu risa es, por lejos, mi sonido favorito en el mundo. 🎵",
+            "Amo la forma tan hermosa en la que me cuidás. 🌹",
+            "Porque con vos puedo ser completamente yo mismo. 🧸",
+            "Amo planear un futuro entero de tu mano. 🗺️",
+            "Por cómo hacés que me enamore de vos cada día un poquito más. 😍",
+            "Tu paciencia, tu ternura y tu forma de ver la vida. 💫",
+            "Simplemente porque sos el amor de mi vida, Jazmín. 🔐"
+        ];
+
+        jarContainer.addEventListener('click', (e) => {
+            const currentText = reasonDisplay.innerText;
+            let randomReason = loveReasons[Math.floor(Math.random() * loveReasons.length)];
+            while(randomReason === currentText && loveReasons.length > 1) {
+                randomReason = loveReasons[Math.floor(Math.random() * loveReasons.length)];
+            }
+
+            reasonDisplay.classList.remove('show');
+            setTimeout(() => {
+                reasonDisplay.innerText = randomReason;
+                reasonDisplay.classList.add('show');
+            }, 150);
+
+            for (let i = 0; i < 7; i++) {
+                const heart = document.createElement('i');
+                heart.classList.add('fa-solid', 'fa-heart', 'burst-heart');
+                heart.style.left = `50%`;
+                heart.style.top = `50%`;
+                
+                const tx = (Math.random() - 0.5) * 140 + 'px';
+                const ty = (Math.random() - 0.8) * 130 - 45 + 'px';
+                const tr = (Math.random() - 0.5) * 80 + 'deg';
+                heart.style.setProperty('--tx', tx);
+                heart.style.setProperty('--ty', ty);
+                heart.style.setProperty('--tr', tr);
+                
+                jarContainer.appendChild(heart);
+                setTimeout(() => heart.remove(), 800);
+            }
+        });
+
+        // --- CARTA INTERACTIVA CLOSING ---
+        const envelopeHitbox = document.getElementById('envelope-hitbox');
+        const envelope = document.getElementById('envelope');
+        const modal = document.getElementById('letter-modal');
+        const closeModal = document.getElementById('close-modal');
+
+        envelopeHitbox.addEventListener('click', () => {
+            if(!envelope.classList.contains('open')) {
+                envelope.style.setProperty('--flap-delay', '0s');
+                envelope.style.setProperty('--letter-delay', '0.3s');
+                envelope.classList.add('open');
+                setTimeout(() => {
+                    modal.classList.add('show');
+                }, 800);
+            } else {
+                modal.classList.add('show');
+            }
+        });
+
+        function handleCloseLetter() {
+            modal.classList.remove('show');
+            setTimeout(() => {
+                envelope.style.setProperty('--letter-delay', '0s');
+                envelope.style.setProperty('--flap-delay', '0.4s');
+                envelope.classList.remove('open');
+            }, 300);
+        }
+
+        closeModal.addEventListener('click', handleCloseLetter);
+
+        window.addEventListener('click', (e) => {
+            if(e.target === modal) {
+                handleCloseLetter();
+            }
+        });
+
+        // --- REPRODUCTOR ---
+        const audio = document.getElementById('romantic-audio');
+        const playBtn = document.getElementById('play-pause-btn');
+
+        playBtn.addEventListener('click', () => {
+            if (audio.paused) {
+                audio.play();
+                playBtn.innerText = "❚❚";
+            } else {
+                audio.pause();
+                playBtn.innerText = "▶";
+            }
+        });
+
+        // --- PÉTALOS ---
+        const petalsContainer = document.getElementById('petals');
+        function createPetal() {
+            const petal = document.createElement('div');
+            petal.classList.add('petal');
+            
+            const size = Math.random() * 8 + 6 + 'px';
+            petal.style.width = size;
+            petal.style.height = size;
+            petal.style.left = Math.random() * 100 + 'vw';
+            petal.style.animationDuration = Math.random() * 5 + 6 + 's';
+            
+            petalsContainer.appendChild(petal);
+            
+            setTimeout(() => {
+                petal.remove();
+            }, 11000);
+        }
+        setInterval(createPetal, 400);
+    </script>
+</body>
+</html>
